@@ -17,6 +17,7 @@ public class LogEntry {
         sb = new StringBuilder("Patient: " + patient.getName() + "/n" +
         "Doctor: " + doctor.getName() + "/n" +
         "Nurse: " + nurse.getName() + "/n" +
+        "Division: " + this.getDivision() + "/n" +
         comment);
     }
 
