@@ -1,16 +1,16 @@
 public class Patient extends Person {
-    private []logEntry log;
+    private List <LogEntry> log;
 }
 
 //om vi ska skapa en patient utan en log
 public Patient(String name, long id){
-    log = null; 
     super(name, id);
+    log = new ArrayList<LogEntry>(); 
 }
 
-//om vi ska skapa en patient med en log
-public Patient([]logEntry startLog, String name, long id){
-    log = startLog;
+//om vi ska skapa en patient med en log, behövs detta verkligen?
+public Patient(<LogEntry> log, String name, long id){
+    this.log = log;
     super(name, id);
 }
 
@@ -18,6 +18,9 @@ public []logEntry getLog() {
     return log;
 }
 
-public void createLogEntry(Doctor doc, String comments, String division){
-    
+//skapar en ny entry i patientens log
+public void createLogEntry(Doctor doc, Nurse nurse, String comment){
+    //behövs det en if-sats som kollar om doktorn är behörig att skapa logen?
+    LogEntry newLog = new LogEntry(this.Patient, doctor, nurse, comment);
+    log.add(newLog);
 }
