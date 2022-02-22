@@ -14,10 +14,13 @@ public Patient(LogEntry log, String name, long id){
     journal = log;
 }
 
-public <LogEntry>logEntry getJournal() {
+public LogEntry logEntry getJournal() {
     return journal;
 }
 
+public readJournal(){
+    journal.forEach(System.out::println);
+}
 //skapar en ny entry i patientens log, behövs det en if-sats som kollar om doktorn är behörig att skapa logen?
 public void createLogEntry(Doctor doc, Nurse nurse, String comment){
     LogEntry newLog = new LogEntry(this.Patient, doc, nurse, comment);
