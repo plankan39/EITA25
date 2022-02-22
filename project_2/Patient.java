@@ -18,7 +18,7 @@ public Patient(LogEntry log, String name, long id){
     journal = log;
 }
 
-public <LogEntry>logEntry getJournal() {
+public LogEntry logEntry getJournal() {
     return journal;
 }
 
