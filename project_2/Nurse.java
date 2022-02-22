@@ -7,7 +7,7 @@ public class Nurse extends Person{
         createLog=false;
         readLog=true;
         writeLog=true;
-        deleteLog=false;
+        delete=false;
     }
 
     public String getDivision() {
