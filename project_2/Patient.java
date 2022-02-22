@@ -29,7 +29,12 @@ public void createLogEntry(Doctor doc, Nurse nurse, String comment){
 }
 
 public void deleteLog(long logNbr){
-    if
+    for (LogEntry le: journal){
+         if(le.getNbr() == longNbr){
+             journal.remove(le);
+         }
+
+    }
 }
 
 
