@@ -1,12 +1,14 @@
 public class Doctor extends Person{
-    private String divisoin;
+    private String division;
 }
 
 //konstruktor
-public Doctor (String div, String name, long id) {
-    divisoin = div;
-    super(name, id); 
+public Doctor (String name, long id, String div) {
+    super(name, id);
+    division = div;
 }
 
 
-
+public String getDivision(){
+    return division;
+}
