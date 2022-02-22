@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Patient extends Person {
     private List<LogEntry> journal;
 
@@ -15,20 +18,21 @@ public Patient(String name, long id){
 //om vi ska skapa en patient med en log, behövs detta verkligen?
 public Patient(LogEntry log, String name, long id){
     super(name, id);
-    journal = log;
+    journal = new ArrayList<LogEntry>();
+    journal.add(log);
 }
 
-public readJournal(){
+public void readJournal(){
     journal.forEach(System.out::println);
 }
 
-public <LogEntry>logEntry getJournal() {
+public List<LogEntry> getJournal() {
     return journal;
 }
 
 //skapar en ny entry i patientens log, behövs det en if-sats som kollar om doktorn är behörig att skapa logen?
-public void createLogEntry(Doctor doc, Nurse nurse, String comment){
-    LogEntry newLog = new LogEntry(this, doc, nurse, comment);
+public void createLogEntry(Doctor doc, Nurse nurse, String comment, long logNbr){
+    LogEntry newLog = new LogEntry(this, doc, nurse, comment, logNbr);
     journal.add(newLog);
 }
 
