@@ -18,7 +18,11 @@ public Patient(LogEntry log, String name, long id){
     journal = log;
 }
 
-public LogEntry logEntry getJournal() {
+public readJournal(){
+    journal.forEach(System.out::println);
+}
+
+public <LogEntry>logEntry getJournal() {
     return journal;
 }
 
@@ -30,7 +34,7 @@ public void createLogEntry(Doctor doc, Nurse nurse, String comment){
 
 public void deleteLog(long logNbr){
     for (LogEntry le: journal){
-         if(le.getNbr() == longNbr){
+         if(le.getNbr() == logNbr){
              journal.remove(le);
          }
 

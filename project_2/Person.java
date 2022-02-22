@@ -19,4 +19,20 @@ public class Person {
     public String getName(){
         return name;
     }
+
+    public boolean createLogAllowed() {
+        return createLog;
+    }
+
+    public boolean readLogAllowed() {
+        return readLog;
+    }
+
+    public boolean writeLogAllowed() {
+        return writeLog;
+    }
+
+    public boolean deleteLogAllowed() {
+        return delete;
+    }
 }
