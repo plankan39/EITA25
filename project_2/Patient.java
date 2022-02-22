@@ -28,7 +28,7 @@ public <LogEntry>logEntry getJournal() {
 
 //skapar en ny entry i patientens log, behövs det en if-sats som kollar om doktorn är behörig att skapa logen?
 public void createLogEntry(Doctor doc, Nurse nurse, String comment){
-    LogEntry newLog = new LogEntry(this.Patient, doc, nurse, comment);
+    LogEntry newLog = new LogEntry(this, doc, nurse, comment);
     journal.add(newLog);
 }
 
