@@ -5,7 +5,7 @@ public class Patient extends Person {
 //om vi ska skapa en patient utan en log
 public Patient(String name, long id){
     super(name, id);
-    log = new ArrayList<LogEntry>(); 
+    journal = new ArrayList<LogEntry>(); 
 }
 
 //om vi ska skapa en patient med en log, behövs detta verkligen?
