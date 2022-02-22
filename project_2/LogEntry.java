@@ -3,15 +3,17 @@ public class LogEntry {
     private Doctor doctor;
     private Nurse nurse;
     private String comment;
+    private long logNbr;
     private StringBuilder sb; 
 
     // private AuditLog;
 
-    public LogEntry(Patient patient, Doctor doctor, Nurse nurse, String comment) {
+    public LogEntry(Patient patient, Doctor doctor, Nurse nurse, String comment, long logNbr) {
         this.patient = patient;
         this.nurse = nurse;
         this.doctor = doctor;
         this.comment = comment;
+        this.logNbr = logNbr;
         sb = new StringBuilder("Patient: " + patient.getName() + "/n" +
         "Doctor: " + doctor.getName() + "/n" +
         "Nurse: " + nurse.getName() + "/n" +
@@ -25,4 +27,9 @@ public class LogEntry {
     public void writeLog(String newComment){
         sb.append(newComment + "/n ");
     }
+
+    public long getNbr(){
+        return logNbr;
+    }
+
 }
