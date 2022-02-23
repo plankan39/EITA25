@@ -32,23 +32,16 @@ public class server implements Runnable {
 
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
 
-      PrintWriter out = null;
-      BufferedReader in = null;
-      out = new PrintWriter(socket.getOutputStream(), true);
-      in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+      //gathers the request from the client
+      ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+      Request request =(Request)in.readObject(); //behövs kanske try-catch här
 
-      String clientMsg = null;
-      while ((clientMsg = in.readLine()) != null) {
-        String rev = new StringBuilder(clientMsg).reverse().toString();
-        System.out.println("received '" + clientMsg + "' from client");
-        System.out.print("sending '" + rev + "' to client...");
-        out.println(rev);
-        out.flush();
-        System.out.println("done\n");
-      }
-      in.close();
-      out.close();
-      socket.close();
+
+      //måste lägga in hur auditen funkar
+      //performs the request (if allowed) and sends back response      
+      sendResponse(socket, request, subject);
+
+      socket.close(); //kanske inte ska stänga socketen här? om vi vill göra flera actions under samma inloggning vill vi slippa starta upp servern flera gånger
       numConnectedClients--;
       System.out.println("client disconnected");
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
@@ -107,5 +100,66 @@ public class server implements Runnable {
       return ServerSocketFactory.getDefault();
     }
     return null;
+  }
+
+  private void sendResponse(SSLSocket socket, Request request, String subject) throws IOException{
+    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+    String reqType = request.getReq();
+    Response response; 
+
+    //kolla division och typ av user här
+
+
+
+    //if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra sin request
+    if (){
+      switch (reqType){
+        case "create":
+          response = createFile();
+        break;
+  
+        case "write":
+          response = writeFile();
+        break;
+  
+        case "read":
+          response = readFile(request.getLog());
+        break;
+  
+        case "delete":
+          response = deleteFile(request.getLog());
+        break;
+  
+        default:
+        response = new Response("Request failed");
+      }
+    } else {
+      response = new Response("You don't have access for this request");
+    }
+
+    out.writeObject(response);
+
+  }
+
+  private Response createFile(){
+
+    return response;
+  }
+
+  private Response writeFile(){
+    
+    return response;
+  }
+
+  private Response readFile(File log) throws FileNotFoundException{
+    return new Response("Request excecuted", log);
+  }
+
+  private Response deleteFile(File log){
+    if (log.delete()){
+      return new Response("Request excecuted");
+    } else {
+      return new Response("Request failed");
+    }
   }
 }
