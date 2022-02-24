@@ -103,7 +103,7 @@ public class client {
         ">");
         msg= read.readLine();
         if (msg.equalsIgnoreCase("quit")) {
-          break; // fixa denna
+          //break; // fixa denna
         }
         switch(Integer.parseInt(msg)){ //här behöver vi inte göra så mycket mer än att välja metod, när vi fått access gör vi resten
           //create new file
@@ -125,7 +125,7 @@ public class client {
           System.out.println(in.readLine()); //behövs nånting som ser till att vi bara läser filer vi sen kan skriva till
           System.out.println("What do you want to add to the file?" + "/n" + ">");
           comment = read.readLine(); //borde inte comment behöva initeras? den initieras ju inuti ett annat case?
-          request = new Request(patient, "write",  path, comment);
+          request = new Request(patient, "write",  path);
           out.writeObject(request);
           break;
           
