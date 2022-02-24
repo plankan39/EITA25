@@ -1,0 +1,29 @@
+username:salt:hashed(salt+password):failedattempts:usertype
+
+
+
+server_keystore:
+CA_trust_cert
+CA->server_key_pair
+
+client_keystore:
+CA_trust_cert
+CA->client_key_pair
+
+
+client sends tls request
+
+server: accept request? yes -> sends cert:CA->server_public_key
+
+client authenticates: client_keystore trust cert-signer? yes -> server starts key exchange
+
+handshake complete ? yes -> login screen
+
+client sends username + password
+
+server: user exist? yes -> encrypt(salt + password) == hashed_pw? yes -> request screen 
+
+client request
+
+server: check access control for request? yes -> accept; no -> deny
+
