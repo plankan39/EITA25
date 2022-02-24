@@ -49,6 +49,9 @@ public class server implements Runnable {
       System.out.println("Client died: " + e.getMessage());
       e.printStackTrace();
       return;
+    } catch (ClassNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
   }
 
@@ -112,7 +115,7 @@ public class server implements Runnable {
 
 
     //if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra sin request
-    if (){
+    if (true){
       switch (reqType){
         case "create":
           response = createFile();
@@ -143,12 +146,12 @@ public class server implements Runnable {
 
   private Response createFile(){
 
-    return response;
+    return new Response("test");
   }
 
   private Response writeFile(){
     
-    return response;
+    return new Response("test");
   }
 
   private Response readFile(File log) throws FileNotFoundException{
