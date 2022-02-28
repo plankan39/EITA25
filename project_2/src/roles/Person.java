@@ -1,3 +1,5 @@
+package roles;
+
 public class Person {
     private String name;
     private long id;
@@ -6,17 +8,16 @@ public class Person {
     protected boolean writeLog;
     protected boolean delete;
 
-
-    public Person(String name, long id){
+    public Person(String name, long id) {
         this.name = name;
         this.id = id;
     }
-    
-    public long getId(){
+
+    public long getId() {
         return id;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 

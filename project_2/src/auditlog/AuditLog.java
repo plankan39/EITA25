@@ -1,12 +1,17 @@
+package auditlog;
+
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import journal.LogEntry;
+import roles.Patient;
+
 public class AuditLog { // The list keeping track of all entries and edits
- //  String log; // log to keep track of all the log entries
-   DateTimeFormatter dtf;
-   StringBuilder sb;
+    // String log; // log to keep track of all the log entries
+    DateTimeFormatter dtf;
+    StringBuilder sb;
 
-
-    public AuditLog(){
+    public AuditLog() {
         dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
         sb = new StringBuilder("Log created: " + timeStamp().toString() + "/n");
     }
@@ -17,7 +22,7 @@ public class AuditLog { // The list keeping track of all entries and edits
 
     }
 
-    public createLog(LogEntry le){ // create a new log
+    public void createLog(LogEntry le) { // create a new log
         AuditLogEntry(le, "Log created");
     }
 
@@ -33,7 +38,7 @@ public class AuditLog { // The list keeping track of all entries and edits
         AuditLogEntry(le, "Log deleted");
     }
 
-    private LocalDate timeStamp(LogEntry le){
+    private LocalDate timeStamp(LogEntry le) {
         LocalDate localDate = LocalDate.now();
         return localDate;
     }

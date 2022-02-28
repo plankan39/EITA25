@@ -1,7 +1,13 @@
+
 import java.io.*;
 import java.net.*;
 import javax.net.*;
 import javax.net.ssl.*;
+
+import api.Request;
+import api.Response;
+import api.Request.RequestType;
+
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -32,16 +38,16 @@ public class server implements Runnable {
 
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
 
-      //gathers the request from the client
+      // gathers the request from the client
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-      Request request =(Request)in.readObject(); //behövs kanske try-catch här
+      Request request = (Request) in.readObject(); // behövs kanske try-catch här
 
-
-      //måste lägga in hur auditen funkar
-      //performs the request (if allowed) and sends back response      
+      // måste lägga in hur auditen funkar
+      // performs the request (if allowed) and sends back response
       sendResponse(socket, request, subject);
 
-      socket.close(); //kanske inte ska stänga socketen här? om vi vill göra flera actions under samma inloggning vill vi slippa starta upp servern flera gånger
+      socket.close(); // kanske inte ska stänga socketen här? om vi vill göra flera actions under
+                      // samma inloggning vill vi slippa starta upp servern flera gånger
       numConnectedClients--;
       System.out.println("client disconnected");
       System.out.println(numConnectedClients + " concurrent connection(s)\n");
@@ -105,36 +111,35 @@ public class server implements Runnable {
     return null;
   }
 
-  private void sendResponse(SSLSocket socket, Request request, String subject) throws IOException{
+  private void sendResponse(SSLSocket socket, Request request, String subject) throws IOException {
     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-    String reqType = request.getReq();
-    Response response; 
+    RequestType reqType = request.getReq();
+    Response response;
 
-    //kolla division och typ av user här
+    // kolla division och typ av user här
 
-
-
-    //if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra sin request
-    if (true){
-      switch (reqType){
-        case "create":
+    // if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra sin
+    // request
+    if (true) {
+      switch (reqType) {
+        case CREATE:
           response = createFile();
-        break;
-  
-        case "write":
+          break;
+
+        case WRITE:
           response = writeFile();
-        break;
-  
-        case "read":
+          break;
+
+        case READ:
           response = readFile(request.getLog());
-        break;
-  
-        case "delete":
+          break;
+
+        case DELETE:
           response = deleteFile(request.getLog());
-        break;
-  
+          break;
+
         default:
-        response = new Response("Request failed");
+          response = new Response("Request failed");
       }
     } else {
       response = new Response("You don't have access for this request");
@@ -144,22 +149,22 @@ public class server implements Runnable {
 
   }
 
-  private Response createFile(){
+  private Response createFile() {
 
     return new Response("test");
   }
 
-  private Response writeFile(){
-    
+  private Response writeFile() {
+
     return new Response("test");
   }
 
-  private Response readFile(File log) throws FileNotFoundException{
+  private Response readFile(File log) throws FileNotFoundException {
     return new Response("Request excecuted", log);
   }
 
-  private Response deleteFile(File log){
-    if (log.delete()){
+  private Response deleteFile(File log) {
+    if (log.delete()) {
       return new Response("Request excecuted");
     } else {
       return new Response("Request failed");
