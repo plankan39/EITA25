@@ -1,23 +1,35 @@
+package server;
 
 import java.io.*;
 import java.net.*;
 import javax.net.*;
 import javax.net.ssl.*;
 
-import api.Request;
-import api.Response;
-import api.Request.RequestType;
+import api.AuditLog;
+import api.request.Request;
+import api.request.Request.RequestType;
+import api.response.Response;
+import server.patient.Patient;
+import server.users.User;
 
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class server implements Runnable {
-  private ServerSocket serverSocket = null;
-  private static int numConnectedClients = 0;
+  private ServerSocket serverSocket;
+  private static int numConnectedClients;
+  private Map<Integer, Patient> patients; // <SSN, Patient>
+  private Map<String, User> users; // <uName, User>
+  private AuditLog auditLog;
 
   public server(ServerSocket ss) throws IOException {
     serverSocket = ss;
+    numConnectedClients = 0;
+    patients = new HashMap<>();
+    users = new HashMap<>();
     newListener();
   }
 
@@ -40,6 +52,8 @@ public class server implements Runnable {
 
       // gathers the request from the client
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+      ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+
       Request request = (Request) in.readObject(); // behövs kanske try-catch här
 
       // måste lägga in hur auditen funkar
@@ -59,6 +73,10 @@ public class server implements Runnable {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+
+  private SSLSocket setupConnection() {
+
   }
 
   private void newListener() {

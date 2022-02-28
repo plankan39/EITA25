@@ -1,11 +1,15 @@
+package client;
 
 import java.net.*;
 import java.io.*;
 import javax.net.ssl.*;
 
 import api.*;
-import api.Request.RequestType;
-import roles.*;
+import api.request.CreateLogRequest;
+import api.request.LoginRequest;
+import api.request.Request;
+import api.request.Request.RequestType;
+import api.response.Response;
 
 import java.security.cert.X509Certificate;
 import java.security.KeyStore;
@@ -25,20 +29,6 @@ public class client {
   private SSLSocket socket;
 
   public static void main(String[] args) throws Exception {
-    client cl = new client();
-    cl.connect(args); // skapar förbindelse med server
-
-    while (true) {
-      cl.sendReq(); // skickar förfrågningar till servern
-      cl.recieveRes(); // tar emot svar från servern
-      break; // behöver lägga till nånting som bryter loopen, kanske kan sendReq returnera en
-             // boolean?
-    }
-
-    cl.socket.close(); // stänger ner
-  }
-
-  private void connect(String[] args) {
     String host = null;
     int port = -1;
     for (int i = 0; i < args.length; i++) {
@@ -66,9 +56,9 @@ public class client {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         SSLContext ctx = SSLContext.getInstance("TLSv1.2");
         // keystore password (storepass);
-        ks.load(new FileInputStream("./certificates/users/doc1keystore"), password);
+        ks.load(new FileInputStream("clientkeystore"), password);
         // truststore password (storepass);
-        ts.load(new FileInputStream("./certificates/users/doc1keystore"), password);
+        ts.load(new FileInputStream("clienttruststore"), password);
         kmf.init(ks, password); // user password (keypass)
         tmf.init(ts); // keystore can be used as truststore here
         ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
@@ -76,7 +66,7 @@ public class client {
       } catch (Exception e) {
         throw new IOException(e.getMessage());
       }
-      socket = (SSLSocket) factory.createSocket(host, port);
+      SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
       System.out.println("\nsocket before handshake:\n" + socket + "\n");
 
       /*
@@ -87,10 +77,118 @@ public class client {
        */
 
       socket.startHandshake();
+      SSLSession session = socket.getSession();
+      Certificate[] cert = session.getPeerCertificates();
+      String subject = ((X509Certificate) cert[0]).getSubjectX500Principal().getName();
+      String issuer = ((X509Certificate) cert[0]).getIssuerX500Principal().getName();
+      System.out.println("certificate name (subject DN field) on certificate received from server:\n" + subject + "\n");
+      System.out.println("issuer (cert issuer DN field): " + issuer);
+      System.out.println("socket after handshake:\n" + socket + "\n");
+      System.out.println("secure connection established\n\n");
+
+      // BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
+      Console read = System.console();
+      ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+      ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+      String userName;
+      Response response;
+      do {
+        System.out.println("Login");
+        System.out.print("Username: ");
+        userName = read.readLine();
+        System.out.print("\nPassword: ");
+        String pw = read.readPassword().toString();
+        System.out.print("\n");
+        Request login = new LoginRequest(userName, pw);
+
+        out.writeObject(login);
+        out.flush();
+
+        response = (Response) in.readObject();
+        if (!response.granted) {
+          System.out.println("Login failed");
+        } else {
+          System.out.println("Login successful");
+        }
+      } while (!response.granted);
+      String options = "What do you want to do?" + "/n" +
+          "Press 1 to create a file, 2 to write to a file, " +
+          "3 to read a file, 4 to delete a file and 'quit' to quit"
+          + "/n" + ">";
+
+      do {
+
+        System.out.println(options);
+
+        String msg = read.readLine();
+        while (!validInputAction(msg) || msg.equalsIgnoreCase("quit")) {
+          System.out.println("Not a valid action. Please choose an action between 1-4 or type 'quit' to quit");
+          msg = read.readLine();
+        }
+
+        switch (msg) {
+          case "1":
+            System.out.print("Social security number of patient: ");
+            int patientSSN;
+            try {
+              patientSSN = Integer.parseInt(read.readLine());
+            } catch (NumberFormatException e) {
+              System.out.println("\n not a valid social security number");
+              break;
+            }
+            System.out.print("\nSocial security number of the nurse to be associated with the log?: ");
+            int nurseSSN;
+            try {
+              nurseSSN = Integer.parseInt(read.readLine());
+            } catch (NumberFormatException e) {
+              System.out.println("\n not a valid social security number");
+              break;
+            }
+            System.out.print("\nLog Entry: ");
+            String log = read.readLine();
+
+            Request create = new CreateLogRequest(patientSSN, userName, nurseSSN, log);
+            out.writeObject(create);
+            out.flush();
+
+            break;
+
+          case "2":
+
+            break;
+
+          case "3":
+
+            break;
+
+          case "4":
+
+            break;
+
+          default:
+            break;
+        }
+
+      } while (true);
+      for (;;) {
+        System.out.print(">");
+        msg = read.readLine();
+        if (msg.equalsIgnoreCase("quit")) {
+          break;
+        }
+        System.out.print("sending '" + msg + "' to server...");
+        out.println(msg);
+        out.flush();
+        System.out.println("done");
+        System.out.println("received '" + in.readLine() + "' from server\n");
+      }
+      in.close();
+      out.close();
+      read.close();
+      socket.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
   private void sendReq() throws IOException {
@@ -187,7 +285,7 @@ public class client {
 
   }
 
-  private boolean validInputAction(String s) {
+  private static boolean validInputAction(String s) {
     if (s.length() != 1 || !Character.isDigit(s.charAt(0))) {
       return false; // Check if the string is empty
     }

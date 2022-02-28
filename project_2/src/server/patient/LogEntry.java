@@ -1,8 +1,7 @@
-package journal;
+package server.patient;
 
-import roles.Doctor;
-import roles.Nurse;
-import roles.Patient;
+import server.users.Doctor;
+import server.users.Nurse;
 
 public class LogEntry {
     private Patient patient;

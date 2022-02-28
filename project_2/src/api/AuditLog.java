@@ -1,10 +1,9 @@
-package auditlog;
+package api;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import journal.LogEntry;
-import roles.Patient;
+import server.patient.LogEntry;
 
 public class AuditLog { // The list keeping track of all entries and edits
     // String log; // log to keep track of all the log entries
