@@ -146,6 +146,16 @@ public class server implements Runnable {
           }
 
         } else if (req instanceof WriteLogRequest) {
+          WriteLogRequest wReq = (WriteLogRequest) req;
+          LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
+          if(!(user instanceof Doctor) && !(user instanceof Nurse)){
+            response = new Response(false);
+            
+          } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()){
+              le.append(wReq.input);
+              response = new Response(true);        
+          }
+          out.writeObject(response);
 
         } else if (req instanceof DeleteRequest) {
           DeleteRequest dReq = (DeleteRequest) req;
