@@ -14,6 +14,7 @@ import api.request.Request;
 import api.request.WriteLogRequest;
 import api.request.Request.RequestType;
 import api.response.Response;
+import server.patient.LogEntry;
 import server.patient.Patient;
 import server.users.Doctor;
 import server.users.Government;
@@ -132,9 +133,17 @@ public class server implements Runnable {
           out.writeObject(response);
         } else if (req instanceof ReadLogRequest) {
           ReadLogRequest rReq = (ReadLogRequest) req;
-          if (user instanceof Government || ((user instanceof UserPatient)&& user.getSSN() != rReq.pSSN)) {
+          boolean isPatient = (user.getSSN() == rReq.pSSN);
+          if (user instanceof Government || !patients.containsKey(rReq.pSSN)) {
             response = new Response(false);
-          } else if ()
+          } else if (rReq.logID != -1) {
+            String log = patients.get(rReq.pSSN).getJournal().get(rReq);
+            for (LogEntry le : patients.get(rReq.pSSN).getJournal().values()) {
+              if (le.getDivi) {
+
+              }
+            }
+          }
 
         } else if (req instanceof WriteLogRequest) {
 
