@@ -43,7 +43,7 @@ public class LogEntry {
     }
 
     public void append(String newComment) {
-        comment = comment.concat("/n").concat(newComment);
+        comment = comment.concat("\n").concat(newComment);
     }
 
     public long getNbr() {
