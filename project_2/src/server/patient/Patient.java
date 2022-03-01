@@ -31,4 +31,8 @@ public class Patient {
     public Map<Long, LogEntry> getJournal() {
         return journal;
     }
+
+    public void deleteJournalEntry(Long lnbr){
+        journal.remove(lnbr);
+    }
 }
