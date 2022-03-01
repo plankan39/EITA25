@@ -9,19 +9,22 @@ import server.patient.LogEntry;
 
 public class AuditLog { // The list keeping track of all entries and edits
     // String log; // log to keep track of all the log entries
-    DateTimeFormatter dtf;
-    StringBuilder sb;
+    //private DateTimeFormatter dtf;
+    private StringBuilder logEntry;
+    LocalDateTime dateTime;
 
-    public AuditLog(LogEntry le, String action) {
-        dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
-        sb = new StringBuilder("Log created: " + timeStamp().toString() + "/n");
-
+    //action behöver skrivas som t.ex "attempted to write to" "wrote to" "attempted to read" "read"
+    public AuditLog(String user, String action, String patient) {
+        dateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        logEntry = new StringBuilder(dateTime.format(formatter)+" "+user+" "+action+" the journal of "+patient+"/n");
+        addToFile(logEntry);
     }
 
-    private void addToFile() {
+    private void addToFile(String sb) {
         try {
             FileWriter auditLogEntry = new FileWriter("auditlog.txt");
-            auditLogEntry.write("info om vad som har gjorts");
+            auditLogEntry.write(sb);
             auditLogEntry.close();
             System.out.println("Audit log entry created.");
         } catch (IOException e) {
@@ -29,20 +32,4 @@ public class AuditLog { // The list keeping track of all entries and edits
             e.printStackTrace();
         }
     }
-
-
-    
-
-    public AuditLogEntry(LogEntry le, String Action){
-        dateTime = timeStamp();
-        Patient p = le.get;
-        
-    }
-
-    private LocalDate timeStamp(LogEntry le) {
-        LocalDate localDate = LocalDate.now();
-        return localDate;
-    }
-
-    
 }
