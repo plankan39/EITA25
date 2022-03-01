@@ -6,10 +6,13 @@ import javax.net.*;
 import javax.net.ssl.*;
 
 import api.AuditLog;
+import api.request.CreateLogRequest;
+import api.request.LoginRequest;
 import api.request.Request;
 import api.request.Request.RequestType;
 import api.response.Response;
 import server.patient.Patient;
+import server.users.Doctor;
 import server.users.User;
 
 import java.security.KeyStore;
@@ -54,11 +57,62 @@ public class server implements Runnable {
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
       ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-      Request request = (Request) in.readObject(); // behövs kanske try-catch här
+      LoginRequest loginReq;
+      boolean granted = false;
+      User user = new User("", -1, "");
+      Response loginResp;
+      do {
+        loginReq = (LoginRequest) in.readObject();
+        if (!loginReq.userName.equalsIgnoreCase("quit")) {
+          break;
+        }
+
+        String uName = loginReq.userName;
+        String pw = loginReq.password;
+
+        if (users.containsKey(uName)) {
+          user = users.get(uName);
+          if (user.checkPassword(pw)) {
+            granted = true;
+          }
+        }
+        loginResp = new Response(granted);
+        out.writeObject(loginResp);
+
+      } while (!granted);
+
+      Object req;
+      Response response;
+      while (true) {
+        if (user.getSSN() == -1) {
+          break;
+        }
+        req = in.readObject();
+
+        if (req instanceof CreateLogRequest) {
+          CreateLogRequest cReq = (CreateLogRequest) req;
+
+          if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
+            response = new Response(false);
+          } else {
+            Patient patient;
+            if (!patients.containsKey(cReq.patientSSN)) {
+              patient = new Patient(cReq.patientSSN, cReq.patientName);
+              patients.put(cReq.patientSSN, patient);
+            } else {
+              patient = patients.get(cReq.patientSSN);
+            }
+
+            patient.addJournalEntry(user, users.get(cReq.nurse), cReq.log);
+
+          }
+        }
+
+      }
 
       // måste lägga in hur auditen funkar
       // performs the request (if allowed) and sends back response
-      sendResponse(socket, request, subject);
+      sendResponse(socket, loginReq, subject);
 
       socket.close(); // kanske inte ska stänga socketen här? om vi vill göra flera actions under
                       // samma inloggning vill vi slippa starta upp servern flera gånger
@@ -76,7 +130,7 @@ public class server implements Runnable {
   }
 
   private SSLSocket setupConnection() {
-
+    return null;
   }
 
   private void newListener() {
