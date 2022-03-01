@@ -120,7 +120,7 @@ public class client {
         System.out.print(options);
 
         msg = read.readLine();
-        while (!validInputAction(msg) || msg.equalsIgnoreCase("quit")) {
+        while (!msg.equalsIgnoreCase("quit") && !validInputAction(msg)) {
           System.out.println("Not a valid action. Please choose an action between 1-4 or type 'quit' to quit");
           msg = read.readLine();
         }

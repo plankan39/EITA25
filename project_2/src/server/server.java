@@ -42,6 +42,7 @@ public class server implements Runnable {
     users = new HashMap<>();
     addDoctor("doc1", 1000, "password", "Lund");
     addNurse("nurse1", 1001, "password", "Lund");
+    users.put("gov1", new Government("gov1", 1002, "password"));
 
     newListener();
   }
@@ -71,121 +72,129 @@ public class server implements Runnable {
       boolean granted = false;
       User user = new User("", -1, "");
       Response loginResp;
-      do {
-        // while (true) {
-        // try {
-        loginReq = (LoginRequest) in.readObject();
-        // } catch (EOFException e) {
-        // // TODO: handle exception
-        // break;
-        // }
-        // }
-        // loginReq = (LoginRequest) in.readObject();
-        if (loginReq.userName.equalsIgnoreCase("quit")) {
-          break;
-        }
 
-        String uName = loginReq.userName;
-        String pw = loginReq.password;
-
-        // System.out.println("uname: " + uName + "pw: " + pw);
-
-        if (users.containsKey(uName)) {
-
-          user = users.get(uName);
-          if (user.checkPassword(pw)) {
-            granted = true;
+      try {
+        do {
+          // while (true) {
+          // try {
+          loginReq = (LoginRequest) in.readObject();
+          // } catch (EOFException e) {
+          // // TODO: handle exception
+          // break;
+          // }
+          // }
+          // loginReq = (LoginRequest) in.readObject();
+          if (loginReq.userName.equalsIgnoreCase("quit")) {
+            break;
           }
-        }
 
-        loginResp = new Response(granted);
-        out.writeObject(loginResp);
-        System.out.println(granted);
-      } while (!granted);
+          String uName = loginReq.userName;
+          String pw = loginReq.password;
 
-      Object req;
+          // System.out.println("uname: " + uName + "pw: " + pw);
 
-      while (true) {
-        System.out.println("Waiting for request");
-        if (user.getSSN() == -1) {
-          System.out.println("wrong ssn");
-          break;
-        }
-        req = in.readObject();
-        Response response = new Response(false);
-        if (req instanceof CreateLogRequest) {
-          CreateLogRequest cReq = (CreateLogRequest) req;
+          if (users.containsKey(uName)) {
 
-          if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
-            response = new Response(false);
-          } else {
-            Patient patient;
-            if (!patients.containsKey(cReq.patientSSN)) {
-              patient = new Patient(cReq.patientSSN, cReq.patientName);
-              patients.put(cReq.patientSSN, patient);
+            user = users.get(uName);
+            if (user.checkPassword(pw)) {
+              granted = true;
+            }
+          }
+
+          loginResp = new Response(granted);
+          out.writeObject(loginResp);
+          System.out.println(granted);
+        } while (!granted);
+
+        Object req;
+
+        while (true) {
+          System.out.println("Waiting for request");
+          if (user.getSSN() == -1) {
+            System.out.println("wrong ssn");
+            break;
+          }
+          req = in.readObject();
+          Response response = new Response(false);
+          if (req instanceof CreateLogRequest) {
+            CreateLogRequest cReq = (CreateLogRequest) req;
+
+            if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
+              response = new Response(false);
             } else {
-              patient = patients.get(cReq.patientSSN);
-            }
-
-            patient.addJournalEntry((Doctor) user, (Nurse) users.get(cReq.nurse), cReq.log);
-            response = new Response(true);
-
-          }
-          out.writeObject(response);
-        } else if (req instanceof ReadLogRequest) {
-          ReadLogRequest rReq = (ReadLogRequest) req;
-          boolean isPatient = user.getSSN() == rReq.pSSN;
-          if (user instanceof Government || !patients.containsKey(rReq.pSSN)) {
-            response = new Response(false);
-          } else if (rReq.logID != -1) {
-
-            LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq.logID);
-            if (l != null && (isPatient ||
-                (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
-                (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision())))) {
-              response = new Response(true, l.toString());
-            }
-
-          } else if (rReq.logID == -1) {
-            String log = "";
-            for (LogEntry l : patients.get(rReq.pSSN).getJournal().values()) {
-              if (isPatient ||
-                  (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
-                  (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision()))) {
-                log = log + "\n" + l.toString();
+              Patient patient;
+              if (!patients.containsKey(cReq.patientSSN)) {
+                patient = new Patient(cReq.patientSSN, cReq.patientName);
+                patients.put(cReq.patientSSN, patient);
+              } else {
+                patient = patients.get(cReq.patientSSN);
               }
+
+              patient.addJournalEntry((Doctor) user, (Nurse) users.get(cReq.nurse), cReq.log);
+              response = new Response(true);
+
             }
-            response = new Response(true, log);
-          }
-          out.writeObject(response);
+            out.writeObject(response);
+          } else if (req instanceof ReadLogRequest) {
+            ReadLogRequest rReq = (ReadLogRequest) req;
+            boolean canReadAll = user.getSSN() == rReq.pSSN || user instanceof Government;
+            if (!patients.containsKey(rReq.pSSN)) {
+              response = new Response(false);
+            } else if (rReq.logID != -1) {
 
-        } else if (req instanceof WriteLogRequest) {
-          WriteLogRequest wReq = (WriteLogRequest) req;
-          LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
+              LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq.logID);
+              if (l != null && (canReadAll ||
+                  (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                  (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision())))) {
+                response = new Response(true, l.toString());
+              }
 
-          if ((!(user instanceof Doctor) && !(user instanceof Nurse)) || le == null) {
+            } else if (rReq.logID == -1) {
+              if (!patients.get(rReq.pSSN).getJournal().isEmpty()) {
+                String log = "";
+                for (LogEntry l : patients.get(rReq.pSSN).getJournal().values()) {
+                  if (canReadAll ||
+                      (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                      (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision()))) {
+                    log = log + "\n" + l.toString();
+                  }
+                }
+                response = new Response(true, log);
+              }
 
-            response = new Response(false);
+            }
+            out.writeObject(response);
 
-          } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
-            le.append(wReq.input);
-            response = new Response(true);
-          }
-          out.writeObject(response);
+          } else if (req instanceof WriteLogRequest) {
+            WriteLogRequest wReq = (WriteLogRequest) req;
+            LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
 
-        } else if (req instanceof DeleteRequest) {
-          DeleteRequest dReq = (DeleteRequest) req;
-          if (user instanceof Government) {
-            Patient patient = patients.get(dReq.patientSSN);
-            patient.deleteJournalEntry(dReq.logNbr);
-            response = new Response(true);
+            if ((!(user instanceof Doctor) && !(user instanceof Nurse)) || le == null) {
+
+              response = new Response(false);
+
+            } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
+              le.append(wReq.input);
+              response = new Response(true);
+            }
+            out.writeObject(response);
+
+          } else if (req instanceof DeleteRequest) {
+            DeleteRequest dReq = (DeleteRequest) req;
+            if (user instanceof Government) {
+              Patient patient = patients.get(dReq.patientSSN);
+              patient.deleteJournalEntry(dReq.logNbr);
+              response = new Response(true);
+            } else {
+              response = new Response(false);
+            }
+            out.writeObject(response);
           } else {
-            response = new Response(false);
+            out.writeObject(new Response(false));
           }
-          out.writeObject(response);
-        } else {
-          out.writeObject(new Response(false));
+
         }
+      } catch (EOFException e) {
 
       }
 
