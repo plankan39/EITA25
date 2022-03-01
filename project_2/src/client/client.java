@@ -5,6 +5,7 @@ import javax.net.ssl.*;
 
 import api.request.CreateLogRequest;
 import api.request.LoginRequest;
+import api.request.ReadLogRequest;
 import api.request.Request;
 import api.response.Response;
 
@@ -156,11 +157,15 @@ public class client {
             break;
 
           case "3":
-            int pSSN;
             try {
-              pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+              int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              out.writeObject(new ReadLogRequest(pSSN, lnbr));
+              out.flush();
+              Response r2 = (Response) in.readObject();
+              System.out.println(r2.log);
             } catch (NumberFormatException e) {
-              System.out.println("not a valid social security number");
+              System.out.println("not a valid social security number or lognbr");
               break;
             }
 
