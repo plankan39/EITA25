@@ -162,7 +162,9 @@ public class server implements Runnable {
         } else if (req instanceof WriteLogRequest) {
           WriteLogRequest wReq = (WriteLogRequest) req;
           LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
-          if (!(user instanceof Doctor) && !(user instanceof Nurse)) {
+
+          if ((!(user instanceof Doctor) && !(user instanceof Nurse)) || le == null) {
+
             response = new Response(false);
 
           } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
@@ -176,10 +178,11 @@ public class server implements Runnable {
           if (user instanceof Government) {
             Patient patient = patients.get(dReq.patientSSN);
             patient.deleteJournalEntry(dReq.logNbr);
-            out.writeObject(new Response(true));
+            response = new Response(true);
           } else {
-            out.writeObject(new Response(false));
+            response = new Response(false);
           }
+          out.writeObject(response);
         } else {
           out.writeObject(new Response(false));
         }
