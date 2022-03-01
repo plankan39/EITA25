@@ -8,6 +8,7 @@ import api.request.DeleteRequest;
 import api.request.LoginRequest;
 import api.request.ReadLogRequest;
 import api.request.Request;
+import api.request.WriteLogRequest;
 import api.response.Response;
 
 import java.security.cert.X509Certificate;
@@ -154,7 +155,18 @@ public class client {
             break;
 
           case "2":
-
+            try {
+            int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+            long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+            String input = read.readLine("Log Entry: ");
+            out.writeObject(new WriteLogRequest(pSSN, input, lnbr));
+            out.flush();
+            Response r2 = (Response) in.readObject();
+            System.out.println(r2.granted);
+          } catch (NumberFormatException e) {
+            System.out.println("not a valid social security number or lognbr");
+            break;
+          }
             break;
 
           case "3":
@@ -173,17 +185,17 @@ public class client {
             break;
 
           case "4":
-            try {
-              int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
-              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
-              out.writeObject(new DeleteRequest(pSSN, lnbr));
-              out.flush();
-              Response r2 = (Response) in.readObject();
-              System.out.println(r2.granted);
-            } catch (NumberFormatException e) {
-              System.out.println("not a valid social security number or lognbr");
-              break;
-            }
+          try {
+            int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+            long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+            out.writeObject(new DeleteRequest(pSSN, lnbr));
+            out.flush();
+            Response r2 = (Response) in.readObject();
+            System.out.println(r2.granted);
+          } catch (NumberFormatException e) {
+            System.out.println("not a valid social security number or lognbr");
+            break;
+          }
             break;
 
           default:
