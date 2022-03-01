@@ -7,12 +7,16 @@ import javax.net.ssl.*;
 
 //import api.AuditLog;
 import api.request.CreateLogRequest;
+import api.request.DeleteRequest;
 import api.request.LoginRequest;
+import api.request.ReadLogRequest;
 import api.request.Request;
+import api.request.WriteLogRequest;
 import api.request.Request.RequestType;
 import api.response.Response;
 import server.patient.Patient;
 import server.users.Doctor;
+import server.users.Government;
 import server.users.Nurse;
 import server.users.User;
 
@@ -34,6 +38,9 @@ public class server implements Runnable {
     numConnectedClients = 0;
     patients = new HashMap<>();
     users = new HashMap<>();
+    addDoctor("doc1", 1000, "password", "Lund");
+    addNurse("nurse1", 1001, "password", "Lund");
+
     newListener();
   }
 
@@ -58,24 +65,33 @@ public class server implements Runnable {
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
       ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-      LoginRequest loginReq;
+      LoginRequest loginReq = new LoginRequest("", "");
       boolean granted = false;
       User user = new User("", -1, "");
       Response loginResp;
       do {
+        // while (true) {
+        // try {
         loginReq = (LoginRequest) in.readObject();
-        if (!loginReq.userName.equalsIgnoreCase("quit")) {
+        // } catch (EOFException e) {
+        // // TODO: handle exception
+        // break;
+        // }
+        // }
+        // loginReq = (LoginRequest) in.readObject();
+        if (loginReq.userName.equalsIgnoreCase("quit")) {
           break;
         }
 
         String uName = loginReq.userName;
         String pw = loginReq.password;
 
+        // System.out.println("uname: " + uName + "pw: " + pw);
+
         if (users.containsKey(uName)) {
 
           user = users.get(uName);
           if (user.checkPassword(pw)) {
-            System.out.println("pwgood");
             granted = true;
           }
         }
@@ -85,7 +101,7 @@ public class server implements Runnable {
       } while (!granted);
 
       Object req;
-      Response response;
+
       while (true) {
         System.out.println("Waiting for request");
         if (user.getSSN() == -1) {
@@ -96,6 +112,7 @@ public class server implements Runnable {
 
         if (req instanceof CreateLogRequest) {
           CreateLogRequest cReq = (CreateLogRequest) req;
+          Response response;
 
           if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
             response = new Response(false);
@@ -112,10 +129,19 @@ public class server implements Runnable {
             response = new Response(true);
 
           }
-        }
-        // } else if (req instanceof ReadLogRequest) {
+          out.writeObject(response);
+        } else if (req instanceof ReadLogRequest) {
+          if (user instanceof Government) {
 
-        // } else if(req instanceof )
+          }
+
+        } else if (req instanceof WriteLogRequest) {
+
+        } else if (req instanceof DeleteRequest) {
+
+        } else {
+          out.writeObject(new Response(false));
+        }
 
       }
 
@@ -151,6 +177,11 @@ public class server implements Runnable {
     users.put(userName, doc);
   }
 
+  private void addNurse(String userName, int ssn, String pw, String division) {
+    Nurse doc = new Nurse(userName, ssn, pw, division);
+    users.put(userName, doc);
+  }
+
   public static void main(String args[]) {
 
     System.out.println("\nServer Started\n");
@@ -163,9 +194,8 @@ public class server implements Runnable {
       ServerSocketFactory ssf = getServerSocketFactory(type);
       ServerSocket ss = ssf.createServerSocket(port);
       ((SSLServerSocket) ss).setNeedClientAuth(true); // enables client authentication
-      server serv = new server(ss);
-      serv.addDoctor("doc1", 1234, "password", "Lund");
       new server(ss);
+
     } catch (IOException e) {
       System.out.println("Unable to start Server: " + e.getMessage());
       e.printStackTrace();
