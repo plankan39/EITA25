@@ -102,13 +102,7 @@ public class server implements Runnable {
         out.writeObject(loginResp);
         System.out.println(granted);
       } while (!granted);
-      boolean userDoctor = false;
-      boolean userNurse = false;
-      if (user instanceof Doctor) {
-        userDoctor = true;
-      } else if (user instanceof Nurse) {
-        userNurse = true;
-      }
+
       Object req;
 
       while (true) {
