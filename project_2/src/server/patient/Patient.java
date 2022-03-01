@@ -32,7 +32,11 @@ public class Patient {
         return journal;
     }
 
-    public void deleteJournalEntry(Long lnbr){
+    public String toString() {
+        return "Name: " + name + "\nssn: " + ssn;
+    }
+
+    public void deleteJournalEntry(Long lnbr) {
         journal.remove(lnbr);
     }
 }

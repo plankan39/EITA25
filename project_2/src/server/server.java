@@ -134,13 +134,13 @@ public class server implements Runnable {
           out.writeObject(response);
         } else if (req instanceof ReadLogRequest) {
           ReadLogRequest rReq = (ReadLogRequest) req;
-          boolean isPatient = (user.getSSN() == rReq.pSSN);
+          boolean isPatient = user.getSSN() == rReq.pSSN;
           if (user instanceof Government || !patients.containsKey(rReq.pSSN)) {
             response = new Response(false);
           } else if (rReq.logID != -1) {
 
-            LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq);
-            if (l != null & (isPatient ||
+            LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq.logID);
+            if (l != null && (isPatient ||
                 (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
                 (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision())))) {
               response = new Response(true, l.toString());
@@ -162,12 +162,12 @@ public class server implements Runnable {
         } else if (req instanceof WriteLogRequest) {
           WriteLogRequest wReq = (WriteLogRequest) req;
           LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
-          if(!(user instanceof Doctor) && !(user instanceof Nurse)){
+          if (!(user instanceof Doctor) && !(user instanceof Nurse)) {
             response = new Response(false);
-            
-          } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()){
-              le.append(wReq.input);
-              response = new Response(true);        
+
+          } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
+            le.append(wReq.input);
+            response = new Response(true);
           }
           out.writeObject(response);
 
