@@ -1,7 +1,5 @@
 package api.response;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
 
 public class Response implements Serializable {

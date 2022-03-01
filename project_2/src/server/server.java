@@ -19,6 +19,7 @@ import server.users.Doctor;
 import server.users.Government;
 import server.users.Nurse;
 import server.users.User;
+import server.users.UserPatient;
 
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -109,10 +110,9 @@ public class server implements Runnable {
           break;
         }
         req = in.readObject();
-
+        Response response;
         if (req instanceof CreateLogRequest) {
           CreateLogRequest cReq = (CreateLogRequest) req;
-          Response response;
 
           if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
             response = new Response(false);
@@ -131,9 +131,10 @@ public class server implements Runnable {
           }
           out.writeObject(response);
         } else if (req instanceof ReadLogRequest) {
-          if (user instanceof Government) {
-
-          }
+          ReadLogRequest rReq = (ReadLogRequest) req;
+          if (user instanceof Government || ((user instanceof UserPatient)&& user.getSSN() != rReq.pSSN)) {
+            response = new Response(false);
+          } else if ()
 
         } else if (req instanceof WriteLogRequest) {
 
