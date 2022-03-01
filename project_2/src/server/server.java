@@ -148,7 +148,14 @@ public class server implements Runnable {
         } else if (req instanceof WriteLogRequest) {
 
         } else if (req instanceof DeleteRequest) {
-
+          DeleteRequest dReq = (DeleteRequest) req;
+          if(user instanceof Government){
+            Patient patient = patients.get(dReq.patientSSN);
+            patient.deleteJournalEntry(dReq.logNbr);
+            out.writeObject(new Response(true));
+          } else {
+            out.writeObject(new Response(false));
+          }
         } else {
           out.writeObject(new Response(false));
         }
