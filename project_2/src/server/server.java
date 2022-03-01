@@ -13,6 +13,7 @@ import api.request.Request.RequestType;
 import api.response.Response;
 import server.patient.Patient;
 import server.users.Doctor;
+import server.users.Nurse;
 import server.users.User;
 
 import java.security.KeyStore;
@@ -103,10 +104,13 @@ public class server implements Runnable {
               patient = patients.get(cReq.patientSSN);
             }
 
-            patient.addJournalEntry(user, users.get(cReq.nurse), cReq.log);
+            patient.addJournalEntry((Doctor) user, (Nurse) users.get(cReq.nurse), cReq.log);
+            response = new Response(true);
 
           }
-        }
+        } else if (req instanceof ReadLogRequest) {
+
+        } else if(req instanceof )
 
       }
 
