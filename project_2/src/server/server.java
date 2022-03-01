@@ -5,7 +5,7 @@ import java.net.*;
 import javax.net.*;
 import javax.net.ssl.*;
 
-import api.AuditLog;
+//import api.AuditLog;
 import api.request.CreateLogRequest;
 import api.request.LoginRequest;
 import api.request.Request;
@@ -27,7 +27,7 @@ public class server implements Runnable {
   private static int numConnectedClients;
   private Map<Integer, Patient> patients; // <SSN, Patient>
   private Map<String, User> users; // <uName, User>
-  private AuditLog auditLog;
+  // private AuditLog auditLog;
 
   public server(ServerSocket ss) throws IOException {
     serverSocket = ss;
@@ -108,15 +108,16 @@ public class server implements Runnable {
             response = new Response(true);
 
           }
-        } else if (req instanceof ReadLogRequest) {
+        }
+        // } else if (req instanceof ReadLogRequest) {
 
-        } else if(req instanceof )
+        // } else if(req instanceof )
 
       }
 
       // måste lägga in hur auditen funkar
       // performs the request (if allowed) and sends back response
-      sendResponse(socket, loginReq, subject);
+      // sendResponse(socket, loginReq, subject);
 
       socket.close(); // kanske inte ska stänga socketen här? om vi vill göra flera actions under
                       // samma inloggning vill vi slippa starta upp servern flera gånger
@@ -141,7 +142,13 @@ public class server implements Runnable {
     (new Thread(this)).start();
   } // calls run()
 
+  private void addDoctor(String userName, int ssn, String pw, String division) {
+    Doctor doc = new Doctor(userName, ssn, pw, division);
+    users.put(userName, doc);
+  }
+
   public static void main(String args[]) {
+
     System.out.println("\nServer Started\n");
     int port = -1;
     if (args.length >= 1) {
@@ -152,6 +159,8 @@ public class server implements Runnable {
       ServerSocketFactory ssf = getServerSocketFactory(type);
       ServerSocket ss = ssf.createServerSocket(port);
       ((SSLServerSocket) ss).setNeedClientAuth(true); // enables client authentication
+      server serv = new server(ss);
+      serv.addDoctor("doc1", 1234, "password", "Lund");
       new server(ss);
     } catch (IOException e) {
       System.out.println("Unable to start Server: " + e.getMessage());
@@ -170,9 +179,9 @@ public class server implements Runnable {
         KeyStore ts = KeyStore.getInstance("JKS");
         char[] password = "password".toCharArray();
         // keystore password (storepass)
-        ks.load(new FileInputStream("./certificates/serverkeystore"), password);
+        ks.load(new FileInputStream("../certificates/serverkeystore"), password);
         // truststore password (storepass)
-        ts.load(new FileInputStream("./certificates/serverkeystore"), password);
+        ts.load(new FileInputStream("../certificates/serverkeystore"), password);
         kmf.init(ks, password); // certificate password (keypass)
         tmf.init(ts); // possible to use keystore as truststore here
         ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
@@ -187,63 +196,65 @@ public class server implements Runnable {
     return null;
   }
 
-  private void sendResponse(SSLSocket socket, Request request, String subject) throws IOException {
-    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-    RequestType reqType = request.getReq();
-    Response response;
+  // private void sendResponse(SSLSocket socket, Request request, String subject)
+  // throws IOException {
+  // ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+  // RequestType reqType = request.getReq();
+  // Response response;
 
-    // kolla division och typ av user här
+  // // kolla division och typ av user här
 
-    // if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra sin
-    // request
-    if (true) {
-      switch (reqType) {
-        case CREATE:
-          response = createFile();
-          break;
+  // // if-sats med hjälpmetod/klass som kollar om user har tillåtelse att utföra
+  // sin
+  // // request
+  // if (true) {
+  // switch (reqType) {
+  // case CREATE:
+  // response = createFile();
+  // break;
 
-        case WRITE:
-          response = writeFile();
-          break;
+  // case WRITE:
+  // response = writeFile();
+  // break;
 
-        case READ:
-          response = readFile(request.getLog());
-          break;
+  // case READ:
+  // response = readFile(request.getLog());
+  // break;
 
-        case DELETE:
-          response = deleteFile(request.getLog());
-          break;
+  // case DELETE:
+  // response = deleteFile(request.getLog());
+  // break;
 
-        default:
-          response = new Response("Request failed");
-      }
-    } else {
-      response = new Response("You don't have access for this request");
-    }
+  // default:
+  // response = new Response("Request failed");
+  // }
+  // } else {
+  // response = new Response("You don't have access for this request");
+  // }
 
-    out.writeObject(response);
+  // out.writeObject(response);
 
-  }
+  // }
 
-  private Response createFile() {
+  // private Response createFile() {
 
-    return new Response("test");
-  }
+  // return new Response("test");
+  // }
 
-  private Response writeFile() {
+  // private Response writeFile() {
 
-    return new Response("test");
-  }
+  // return new Response("test");
+  // }
 
-  private Response readFile(File log) throws FileNotFoundException {
-    return new Response("Request excecuted", log);
-  }
+  // private Response readFile(File log) throws FileNotFoundException {
+  // return new Response("Request excecuted", log);
+  // }
 
-  private Response deleteFile(File log) {
-    if (log.delete()) {
-      return new Response("Request excecuted");
-    } else {
-      return new Response("Request failed");
-    }
-  }
+  // private Response deleteFile(File log) {
+  // if (log.delete()) {
+  // return new Response("Request excecuted");
+  // } else {
+  // return new Response("Request failed");
+  // }
+  // }
 }
