@@ -72,20 +72,24 @@ public class server implements Runnable {
         String pw = loginReq.password;
 
         if (users.containsKey(uName)) {
+
           user = users.get(uName);
           if (user.checkPassword(pw)) {
+            System.out.println("pwgood");
             granted = true;
           }
         }
         loginResp = new Response(granted);
         out.writeObject(loginResp);
-
+        System.out.println(granted);
       } while (!granted);
 
       Object req;
       Response response;
       while (true) {
+        System.out.println("Waiting for request");
         if (user.getSSN() == -1) {
+          System.out.println("wrong ssn");
           break;
         }
         req = in.readObject();
@@ -223,10 +227,7 @@ public class server implements Runnable {
 
   // case DELETE:
   // response = deleteFile(request.getLog());
-  // break;
-
-  // default:
-  // response = new Response("Request failed");
+  // break;addDoctor
   // }
   // } else {
   // response = new Response("You don't have access for this request");

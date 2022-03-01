@@ -103,8 +103,15 @@ public class client {
 
         out.writeObject(login);
         out.flush();
-
-        response = (Response) in.readObject();
+        response = new Response(false);
+        while (true) {
+          try {
+            response = (Response) in.readObject();
+          } catch (EOFException e) {
+            // TODO: handle exception
+            break;
+          }
+        }
         if (!response.granted) {
           System.out.println("Login failed");
         } else {

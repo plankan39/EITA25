@@ -21,5 +21,6 @@ public class Patient {
 
     public void addJournalEntry(Doctor doctor, Nurse nurse, String log) {
         LogEntry le = new LogEntry(this, doctor, nurse, log, logNbr++);
+        journal.add(le);
     }
 }
