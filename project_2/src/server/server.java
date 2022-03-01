@@ -97,6 +97,7 @@ public class server implements Runnable {
             granted = true;
           }
         }
+
         loginResp = new Response(granted);
         out.writeObject(loginResp);
         System.out.println(granted);
@@ -111,7 +112,7 @@ public class server implements Runnable {
           break;
         }
         req = in.readObject();
-        Response response;
+        Response response = new Response(false);
         if (req instanceof CreateLogRequest) {
           CreateLogRequest cReq = (CreateLogRequest) req;
 
@@ -137,13 +138,26 @@ public class server implements Runnable {
           if (user instanceof Government || !patients.containsKey(rReq.pSSN)) {
             response = new Response(false);
           } else if (rReq.logID != -1) {
-            String log = patients.get(rReq.pSSN).getJournal().get(rReq);
-            for (LogEntry le : patients.get(rReq.pSSN).getJournal().values()) {
-              if (le.getDivi) {
 
+            LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq);
+            if (l != null & (isPatient ||
+                (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision())))) {
+              response = new Response(true, l.toString());
+            }
+
+          } else if (rReq.logID == -1) {
+            String log = "";
+            for (LogEntry l : patients.get(rReq.pSSN).getJournal().values()) {
+              if (isPatient ||
+                  (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                  (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision()))) {
+                log = log + "\n" + l.toString();
               }
             }
+            response = new Response(true, log);
           }
+          out.writeObject(response);
 
         } else if (req instanceof WriteLogRequest) {
           WriteLogRequest wReq = (WriteLogRequest) req;
@@ -159,7 +173,7 @@ public class server implements Runnable {
 
         } else if (req instanceof DeleteRequest) {
           DeleteRequest dReq = (DeleteRequest) req;
-          if(user instanceof Government){
+          if (user instanceof Government) {
             Patient patient = patients.get(dReq.patientSSN);
             patient.deleteJournalEntry(dReq.logNbr);
             out.writeObject(new Response(true));
