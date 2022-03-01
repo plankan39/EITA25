@@ -30,9 +30,21 @@ public class LogEntry {
         return doctor.getDivision();
     }
 
-    // public void writeLog(String newComment) {
-    // sb.append(newComment + "/n ");
-    // }
+    public Patient getPatient(){
+        return patient;
+    }
+
+    public Doctor getDoctor(){
+        return doctor;
+    }
+
+    public Nurse getNurse(){
+        return nurse;
+    }
+
+    public void append(String newComment){
+        comment = comment.concat("/n").concat(newComment);
+    }
 
     public long getNbr() {
         return logNbr;
