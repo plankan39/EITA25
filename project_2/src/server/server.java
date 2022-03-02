@@ -94,7 +94,7 @@ public class server implements Runnable {
           String pw = loginReq.password;
 
           // System.out.println("uname: " + uName + "pw: " + pw);
-          auditLog.addToAuditLog(uName, "LoginRequest", "");
+          auditLog.addLoginToAuditLog(uName, "LoginRequest", request.granted);
           if (users.containsKey(uName)) {
 
             user = users.get(uName);
@@ -137,6 +137,7 @@ public class server implements Runnable {
 
             }
             out.writeObject(response);
+            auditLog.addActionToAuditLog(uName, "LoginRequest", cReq.patientSSN, response.granted);
           } else if (req instanceof ReadLogRequest) {
             ReadLogRequest rReq = (ReadLogRequest) req;
             boolean canReadAll = user.getSSN() == rReq.pSSN || user instanceof Government;
