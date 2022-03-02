@@ -149,7 +149,9 @@ public class client {
             Response r = (Response) in.readObject();
 
             if (r.granted) {
-              System.out.println("Hurra filen skapad");
+              System.out.println("Log entry created successfully");
+            } else {
+              System.out.println("Request denied, no log entry created");
             }
 
             break;
@@ -157,12 +159,16 @@ public class client {
           case "2":
             try {
               int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
-              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr: "));
               String input = read.readLine("Log Entry: ");
               out.writeObject(new WriteLogRequest(pSSN, input, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              System.out.println(r2.granted);
+              if (r2.granted){
+                System.out.println("Access granted, file has been updated");
+              } else {
+                System.out.println("Access denied");
+              }
             } catch (NumberFormatException e) {
               System.out.println("not a valid social security number or lognbr");
               break;
@@ -176,7 +182,11 @@ public class client {
               out.writeObject(new ReadLogRequest(pSSN, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              System.out.println(r2.granted + r2.log);
+              if (r2.granted){
+                System.out.println("Access granted" + "\n" + r2.log);
+              } else {
+                System.out.println("Access denied");
+              }
             } catch (NumberFormatException e) {
               System.out.println("not a valid social security number or lognbr");
               break;
@@ -187,11 +197,15 @@ public class client {
           case "4":
             try {
               int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
-              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr: "));
               out.writeObject(new DeleteRequest(pSSN, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              System.out.println(r2.granted);
+              if (r2.granted){
+                System.out.println("Access granted, file deleted");
+              } else {
+                System.out.println("Access denied");
+              }
             } catch (NumberFormatException e) {
               System.out.println("not a valid social security number or lognbr");
               break;
