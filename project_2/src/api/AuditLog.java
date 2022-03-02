@@ -20,17 +20,14 @@ public class AuditLog { // The list keeping track of all entries and edits
         dateTime = LocalDateTime.now();
         formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         auditLogEntry = new FileWriter(logPath, true);
-        // logEntry = dateTime.format(formatter) + " " + user + " " + action + " the
-        // journal of " + patient + "\n";
-        // addToAuditLog(logEntry);
     }
 
 
-    public void addLoginToAuditLog(String user, String action) {
-        // creates filewriter which can append to
-        String logEntry = dateTime.format(formatter) + " " + user + " " + action + "\n"; // our
-        // auditlog
+    public void addLoginToAuditLog(String user, String action, boolean actionGranted) {
+        // creates filewriter which can append to our auditlog
+        String logEntry = dateTime.format(formatter) + " " + user + " " + action + " " +  booleanStatus(actionGranted) + "\n";
         try {
+            auditLogEntry.open();
             auditLogEntry.append(logEntry);
             auditLogEntry.close();
         } catch (IOException e) {
@@ -39,18 +36,28 @@ public class AuditLog { // The list keeping track of all entries and edits
         }
     }
 
-    public void addActionToAuditLog(String user, String action, String patient) {
+    public void addActionToAuditLog(String user, String action, int patientSSN, boolean actionGranted) {
         // creates filewriter which can append to
-        String logEntry = dateTime.format(formatter) + " " + user + " " + action + " the journal of " + patient + "\n"; // our
+        String logEntry = dateTime.format(formatter) + " " + user + " " + action + " the journal of " + patientSSN + " " + booleanStatus(actionGranted) + "\n"; // our
         // auditlog
         try {
+            auditLogEntry.open();
             auditLogEntry.append(logEntry);
             auditLogEntry.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
     }
+
+    private String booleanStatus(boolean actionGranted){
+        if (actionGranted == true){
+            return "ACCESS GRANTED";
+        }
+        return "ACCESS DENIED"
+    }
+
 }
 
 
