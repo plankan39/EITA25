@@ -1,14 +1,14 @@
 package client;
 
-import java.net.*;
 import java.io.*;
 import javax.net.ssl.*;
 
-import api.*;
 import api.request.CreateLogRequest;
+import api.request.DeleteRequest;
 import api.request.LoginRequest;
+import api.request.ReadLogRequest;
 import api.request.Request;
-import api.request.Request.RequestType;
+import api.request.WriteLogRequest;
 import api.response.Response;
 
 import java.security.cert.X509Certificate;
@@ -94,41 +94,33 @@ public class client {
       Response response;
       do {
         System.out.println("Login");
-        System.out.print("Username: ");
-        userName = read.readLine();
-        System.out.print("\nPassword: ");
-        String pw = read.readPassword().toString();
-        System.out.print("\n");
+        userName = read.readLine("Username: ");
+        String pw = new String(read.readPassword("Password: "));
         Request login = new LoginRequest(userName, pw);
+
+        System.out.println(((LoginRequest) login).userName + " " + ((LoginRequest) login).password);
 
         out.writeObject(login);
         out.flush();
-        response = new Response(false);
-        while (true) {
-          try {
-            response = (Response) in.readObject();
-          } catch (EOFException e) {
-            // TODO: handle exception
-            break;
-          }
-        }
+        response = (Response) in.readObject();
+
         if (!response.granted) {
           System.out.println("Login failed");
         } else {
           System.out.println("Login successful");
         }
       } while (!response.granted);
-      String options = "What do you want to do?" + "/n" +
+      String options = "What do you want to do?" + "\n" +
           "Press 1 to create a file, 2 to write to a file, " +
           "3 to read a file, 4 to delete a file and 'quit' to quit"
-          + "/n" + ">";
+          + "\n" + ">";
       String msg;
       do {
 
-        System.out.println(options);
+        System.out.print(options);
 
         msg = read.readLine();
-        while (!validInputAction(msg) || msg.equalsIgnoreCase("quit")) {
+        while (!msg.equalsIgnoreCase("quit") && !validInputAction(msg)) {
           System.out.println("Not a valid action. Please choose an action between 1-4 or type 'quit' to quit");
           msg = read.readLine();
         }
@@ -137,12 +129,11 @@ public class client {
           case "1":
             System.out.print("Name of patient: ");
             String patientName = read.readLine();
-            System.out.print("\nSocial security number of patient: ");
             int patientSSN;
             try {
-              patientSSN = Integer.parseInt(read.readLine());
+              patientSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
             } catch (NumberFormatException e) {
-              System.out.println("\n not a valid social security number");
+              System.out.println("not a valid social security number");
               break;
             }
             System.out.print("\nUsername of the nurse to be associated with the log?: ");
@@ -164,15 +155,47 @@ public class client {
             break;
 
           case "2":
-
+            try {
+              int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              String input = read.readLine("Log Entry: ");
+              out.writeObject(new WriteLogRequest(pSSN, input, lnbr));
+              out.flush();
+              Response r2 = (Response) in.readObject();
+              System.out.println(r2.granted);
+            } catch (NumberFormatException e) {
+              System.out.println("not a valid social security number or lognbr");
+              break;
+            }
             break;
 
           case "3":
+            try {
+              int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              out.writeObject(new ReadLogRequest(pSSN, lnbr));
+              out.flush();
+              Response r2 = (Response) in.readObject();
+              System.out.println(r2.granted + r2.log);
+            } catch (NumberFormatException e) {
+              System.out.println("not a valid social security number or lognbr");
+              break;
+            }
 
             break;
 
           case "4":
-
+            try {
+              int pSSN = Integer.parseInt(read.readLine("Social security number of patient: "));
+              long lnbr = Integer.parseInt(read.readLine("Lognbr(write -1 to show all): "));
+              out.writeObject(new DeleteRequest(pSSN, lnbr));
+              out.flush();
+              Response r2 = (Response) in.readObject();
+              System.out.println(r2.granted);
+            } catch (NumberFormatException e) {
+              System.out.println("not a valid social security number or lognbr");
+              break;
+            }
             break;
 
           default:
@@ -189,110 +212,6 @@ public class client {
       e.printStackTrace();
     }
   }
-
-  // private void sendReq() throws IOException {
-  // BufferedReader in = null;
-  // ObjectOutputStream out = null;
-  // BufferedReader read = null;
-  // in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-  // read = new BufferedReader(new InputStreamReader(System.in));
-  // out = new ObjectOutputStream(socket.getOutputStream());
-  // System.out.println("For which patient do you want to operate?" + "/n" + ">");
-  // String patient = read.readLine();
-  // String msg;
-  // Request request;
-  // System.out.print("What do you want to do?" + "/n" +
-  // "Press 1 to create a file, 2 to write to a file, 3 to read a file, 4 to
-  // delete a file and 'quit' to quit" + "/n"
-  // +
-  // ">");
-  // msg = read.readLine();
-  // while (!validInputAction(msg) || msg.equalsIgnoreCase("quit")) {
-  // System.out.println("Not a valid action. Please choose an action between 1-4
-  // or type 'quit' to quit");
-  // }
-
-  // if (msg.equalsIgnoreCase("quit")) {
-  // return;
-  // // break; // fixa denna
-  // }
-  // switch (Integer.parseInt(msg)) { // här behöver vi inte göra så mycket mer än
-  // att välja metod, när vi fått access
-  // // gör vi resten
-  // // create new file
-  // case 1:
-  // System.out.println("Which nurse do you want to associate with the log?" +
-  // "/n" + ">");
-  // String nurse = read.readLine(); // hade velat söka bland våra nurses och se
-  // att namnet finns, då kan vi koppla
-  // // till en nurse ist för string också
-  // System.out.println("Log entry:" + "/n" + ">");
-  // String comment = read.readLine();
-  // request = new Request(patient, RequestType.CREATE, nurse);
-  // out.writeObject(request);
-  // break;
-
-  // // write to existing file
-  // case 2:
-  // System.out.println("Path to desired file: ");
-  // String path = read.readLine();
-  // Request readReq = new Request(patient, RequestType.READ, path);
-  // out.writeObject(readReq); // dessa två rader är för att man ska kunna läsa
-  // vad som står i filen innan vi
-  // // skriver på
-  // System.out.println(in.readLine()); // behövs nånting som ser till att vi bara
-  // läser filer vi sen kan skriva till
-  // System.out.println("What do you want to add to the file?" + "/n" + ">");
-  // comment = read.readLine(); // borde inte comment behöva initeras? den
-  // initieras ju inuti ett annat case?
-  // request = new Request(patient, RequestType.WRITE, path);
-  // out.writeObject(request);
-  // break;
-
-  // // read file
-  // case 3:
-  // request = new Request(patient, "read"); // tänker nu att alla logs som user
-  // har access till skrivs ut, kanske
-  // // ska välja fil?
-  // out.writeObject(request);
-
-  // break;
-
-  // // delete file
-  // case 4:
-  // System.out.println("Path to file that is to be deleted:");
-  // path = read.readLine();
-  // request = new Request(patient, path);
-  // out.writeObject(request);
-
-  // break;
-
-  // case 9:
-
-  // break;
-
-  // default:
-  // System.out.println("Please enter enter one of the allowed numbers!");
-  // // Här vill vi skicka tillbaka användaren så den får välja om
-
-  // }
-
-  // }
-
-  // private void recieveRes() {
-  // try {
-  // ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-  // Response response = (Response) in.readObject();
-  // System.out.println(response.getStatus()); // skriver ut status på response,
-  // dvs om den lyckats eller ej
-  // // TODO code to write out file if we wanted to read
-
-  // } catch (ClassNotFoundException | IOException e) {
-  // // TODO Auto-generated catch block
-  // e.printStackTrace();
-  // }
-
-  // }
 
   private static boolean validInputAction(String s) {
     if (s.length() != 1 || !Character.isDigit(s.charAt(0))) {

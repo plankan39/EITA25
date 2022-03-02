@@ -1,5 +1,6 @@
 package server.users;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -34,7 +35,10 @@ public class User {
         try {
             md = MessageDigest.getInstance("SHA-512");
             md.update(salt);
-            return md.digest(pw.getBytes());
+            System.out.println(pw);
+            byte[] hash = md.digest(pw.getBytes());
+            System.out.println(hash.toString());
+            return hash;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
@@ -56,7 +60,8 @@ public class User {
     }
 
     public String toString() {
-        String s = userName + ":" + ssn + ":" + new String(salt) + ":" + new String(hashedPW) + ":";
+        String s = "";
+        s = userName + ":" + ssn + ":" + salt.toString() + ":" + hashedPW.toString() + ":";
         return s;
     }
 }

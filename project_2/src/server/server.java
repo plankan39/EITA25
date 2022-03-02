@@ -7,14 +7,20 @@ import javax.net.ssl.*;
 
 //import api.AuditLog;
 import api.request.CreateLogRequest;
+import api.request.DeleteRequest;
 import api.request.LoginRequest;
+import api.request.ReadLogRequest;
 import api.request.Request;
+import api.request.WriteLogRequest;
 import api.request.Request.RequestType;
 import api.response.Response;
+import server.patient.LogEntry;
 import server.patient.Patient;
 import server.users.Doctor;
+import server.users.Government;
 import server.users.Nurse;
 import server.users.User;
+import server.users.UserPatient;
 
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -34,6 +40,10 @@ public class server implements Runnable {
     numConnectedClients = 0;
     patients = new HashMap<>();
     users = new HashMap<>();
+    addDoctor("doc1", 1000, "password", "Lund");
+    addNurse("nurse1", 1001, "password", "Lund");
+    users.put("gov1", new Government("gov1", 1002, "password"));
+
     newListener();
   }
 
@@ -58,64 +68,133 @@ public class server implements Runnable {
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
       ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-      LoginRequest loginReq;
+      LoginRequest loginReq = new LoginRequest("", "");
       boolean granted = false;
       User user = new User("", -1, "");
       Response loginResp;
-      do {
-        loginReq = (LoginRequest) in.readObject();
-        if (!loginReq.userName.equalsIgnoreCase("quit")) {
-          break;
-        }
 
-        String uName = loginReq.userName;
-        String pw = loginReq.password;
-
-        if (users.containsKey(uName)) {
-
-          user = users.get(uName);
-          if (user.checkPassword(pw)) {
-            System.out.println("pwgood");
-            granted = true;
+      try {
+        do {
+          // while (true) {
+          // try {
+          loginReq = (LoginRequest) in.readObject();
+          // } catch (EOFException e) {
+          // // TODO: handle exception
+          // break;
+          // }
+          // }
+          // loginReq = (LoginRequest) in.readObject();
+          if (loginReq.userName.equalsIgnoreCase("quit")) {
+            break;
           }
-        }
-        loginResp = new Response(granted);
-        out.writeObject(loginResp);
-        System.out.println(granted);
-      } while (!granted);
 
-      Object req;
-      Response response;
-      while (true) {
-        System.out.println("Waiting for request");
-        if (user.getSSN() == -1) {
-          System.out.println("wrong ssn");
-          break;
-        }
-        req = in.readObject();
+          String uName = loginReq.userName;
+          String pw = loginReq.password;
 
-        if (req instanceof CreateLogRequest) {
-          CreateLogRequest cReq = (CreateLogRequest) req;
+          // System.out.println("uname: " + uName + "pw: " + pw);
 
-          if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
-            response = new Response(false);
-          } else {
-            Patient patient;
-            if (!patients.containsKey(cReq.patientSSN)) {
-              patient = new Patient(cReq.patientSSN, cReq.patientName);
-              patients.put(cReq.patientSSN, patient);
-            } else {
-              patient = patients.get(cReq.patientSSN);
+          if (users.containsKey(uName)) {
+
+            user = users.get(uName);
+            if (user.checkPassword(pw)) {
+              granted = true;
             }
-
-            patient.addJournalEntry((Doctor) user, (Nurse) users.get(cReq.nurse), cReq.log);
-            response = new Response(true);
-
           }
-        }
-        // } else if (req instanceof ReadLogRequest) {
 
-        // } else if(req instanceof )
+          loginResp = new Response(granted);
+          out.writeObject(loginResp);
+          System.out.println(granted);
+        } while (!granted);
+
+        Object req;
+
+        while (true) {
+          System.out.println("Waiting for request");
+          if (user.getSSN() == -1) {
+            System.out.println("wrong ssn");
+            break;
+          }
+          req = in.readObject();
+          Response response = new Response(false);
+          if (req instanceof CreateLogRequest) {
+            CreateLogRequest cReq = (CreateLogRequest) req;
+
+            if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
+              response = new Response(false);
+            } else {
+              Patient patient;
+              if (!patients.containsKey(cReq.patientSSN)) {
+                patient = new Patient(cReq.patientSSN, cReq.patientName);
+                patients.put(cReq.patientSSN, patient);
+              } else {
+                patient = patients.get(cReq.patientSSN);
+              }
+
+              patient.addJournalEntry((Doctor) user, (Nurse) users.get(cReq.nurse), cReq.log);
+              response = new Response(true);
+
+            }
+            out.writeObject(response);
+          } else if (req instanceof ReadLogRequest) {
+            ReadLogRequest rReq = (ReadLogRequest) req;
+            boolean canReadAll = user.getSSN() == rReq.pSSN || user instanceof Government;
+            if (!patients.containsKey(rReq.pSSN)) {
+              response = new Response(false);
+            } else if (rReq.logID != -1) {
+
+              LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq.logID);
+              if (l != null && (canReadAll ||
+                  (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                  (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision())))) {
+                response = new Response(true, l.toString());
+              }
+
+            } else if (rReq.logID == -1) {
+              if (!patients.get(rReq.pSSN).getJournal().isEmpty()) {
+                String log = "";
+                for (LogEntry l : patients.get(rReq.pSSN).getJournal().values()) {
+                  if (canReadAll ||
+                      (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
+                      (user instanceof Nurse && ((Nurse) user).getDivision().equals(l.getDivision()))) {
+                    log = log + "\n" + l.toString();
+                  }
+                }
+                response = new Response(true, log);
+              }
+
+            }
+            out.writeObject(response);
+
+          } else if (req instanceof WriteLogRequest) {
+            WriteLogRequest wReq = (WriteLogRequest) req;
+            LogEntry le = patients.get(wReq.patientSSN).getJournal().get(wReq.logNbr);
+
+            if ((!(user instanceof Doctor) && !(user instanceof Nurse)) || le == null) {
+
+              response = new Response(false);
+
+            } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
+              le.append(wReq.input);
+              response = new Response(true);
+            }
+            out.writeObject(response);
+
+          } else if (req instanceof DeleteRequest) {
+            DeleteRequest dReq = (DeleteRequest) req;
+            if (user instanceof Government) {
+              Patient patient = patients.get(dReq.patientSSN);
+              patient.deleteJournalEntry(dReq.logNbr);
+              response = new Response(true);
+            } else {
+              response = new Response(false);
+            }
+            out.writeObject(response);
+          } else {
+            out.writeObject(new Response(false));
+          }
+
+        }
+      } catch (EOFException e) {
 
       }
 
@@ -151,6 +230,11 @@ public class server implements Runnable {
     users.put(userName, doc);
   }
 
+  private void addNurse(String userName, int ssn, String pw, String division) {
+    Nurse doc = new Nurse(userName, ssn, pw, division);
+    users.put(userName, doc);
+  }
+
   public static void main(String args[]) {
 
     System.out.println("\nServer Started\n");
@@ -163,9 +247,8 @@ public class server implements Runnable {
       ServerSocketFactory ssf = getServerSocketFactory(type);
       ServerSocket ss = ssf.createServerSocket(port);
       ((SSLServerSocket) ss).setNeedClientAuth(true); // enables client authentication
-      server serv = new server(ss);
-      serv.addDoctor("doc1", 1234, "password", "Lund");
       new server(ss);
+
     } catch (IOException e) {
       System.out.println("Unable to start Server: " + e.getMessage());
       e.printStackTrace();
