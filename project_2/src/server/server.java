@@ -173,7 +173,8 @@ public class server implements Runnable {
 
               response = new Response(false);
 
-            } else if (le.getDoctor().getSSN() == user.getSSN() || le.getNurse().getSSN() == user.getSSN()) {
+            } else if ((user instanceof Doctor && le.getDoctor().getSSN() == user.getSSN()) || 
+                      (user instanceof Nurse && le.getNurse().getSSN() == user.getSSN())) {
               le.append(wReq.input);
               response = new Response(true);
             }
