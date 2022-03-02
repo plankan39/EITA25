@@ -13,21 +13,23 @@ public class AuditLog { // The list keeping track of all entries and edits
     private LocalDateTime dateTime;
     private DateTimeFormatter formatter;
     private FileWriter auditLogEntry;
+    private String logPath;
 
     // action behöver skrivas som t.ex "attempted to write to" "wrote to" "attempted
     // to read" "read"
     public AuditLog(String logPath) throws IOException {
         dateTime = LocalDateTime.now();
         formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        auditLogEntry = new FileWriter(logPath, true);
+        this.logPath = logPath;
     }
 
 
-    public void addLoginToAuditLog(String user, String action, boolean actionGranted) {
+    public void addLoginToAuditLog(String user, String action, boolean actionGranted) throws IOException{
         // creates filewriter which can append to our auditlog
         String logEntry = dateTime.format(formatter) + " " + user + " " + action + " " +  booleanStatus(actionGranted) + "\n";
+        auditLogEntry = new FileWriter(logPath, true);
         try {
-            auditLogEntry.open();
+           // auditLogEntry.open();
             auditLogEntry.append(logEntry);
             auditLogEntry.close();
         } catch (IOException e) {
@@ -36,12 +38,12 @@ public class AuditLog { // The list keeping track of all entries and edits
         }
     }
 
-    public void addActionToAuditLog(String user, String action, int patientSSN, boolean actionGranted) {
+    public void addActionToAuditLog(String user, String action, int patientSSN, boolean actionGranted) throws IOException {
         // creates filewriter which can append to
         String logEntry = dateTime.format(formatter) + " " + user + " " + action + " the journal of " + patientSSN + " " + booleanStatus(actionGranted) + "\n"; // our
-        // auditlog
+        auditLogEntry = new FileWriter(logPath, true);
         try {
-            auditLogEntry.open();
+           // auditLogEntry.open();
             auditLogEntry.append(logEntry);
             auditLogEntry.close();
         } catch (IOException e) {
@@ -55,7 +57,7 @@ public class AuditLog { // The list keeping track of all entries and edits
         if (actionGranted == true){
             return "ACCESS GRANTED";
         }
-        return "ACCESS DENIED"
+        return "ACCESS DENIED";
     }
 
 }
