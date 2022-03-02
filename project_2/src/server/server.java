@@ -5,6 +5,7 @@ import java.net.*;
 import javax.net.*;
 import javax.net.ssl.*;
 
+import api.AuditLog;
 //import api.AuditLog;
 import api.request.CreateLogRequest;
 import api.request.DeleteRequest;
@@ -92,7 +93,7 @@ public class server implements Runnable {
           String pw = loginReq.password;
 
           // System.out.println("uname: " + uName + "pw: " + pw);
-
+          new AuditLog(uName, "LoginRequest", "");
           if (users.containsKey(uName)) {
 
             user = users.get(uName);
@@ -173,8 +174,8 @@ public class server implements Runnable {
 
               response = new Response(false);
 
-            } else if ((user instanceof Doctor && le.getDoctor().getSSN() == user.getSSN()) || 
-                      (user instanceof Nurse && le.getNurse().getSSN() == user.getSSN())) {
+            } else if ((user instanceof Doctor && le.getDoctor().getSSN() == user.getSSN()) ||
+                (user instanceof Nurse && le.getNurse().getSSN() == user.getSSN())) {
               le.append(wReq.input);
               response = new Response(true);
             }
