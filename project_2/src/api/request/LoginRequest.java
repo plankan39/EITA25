@@ -1,6 +1,8 @@
 package api.request;
 
-public class LoginRequest implements Request {
+import java.io.Serializable;
+
+public class LoginRequest implements Request, Serializable {
     public final String userName;
     public final String password;
 

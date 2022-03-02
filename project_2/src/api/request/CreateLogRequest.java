@@ -1,6 +1,8 @@
 package api.request;
 
-public class CreateLogRequest implements Request {
+import java.io.Serializable;
+
+public class CreateLogRequest implements Request, Serializable {
     public final String patientName;
     public final int patientSSN;
     public final String nurse;
