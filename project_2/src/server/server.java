@@ -43,8 +43,13 @@ public class server implements Runnable {
     patients = new HashMap<>();
     users = new HashMap<>();
     addDoctor("doc1", 1000, "password", "Lund");
+    addDoctor("doc2", 1004, "password", "Malmö");
+    addDoctor("doc3", 1005, "password3", "Lund");
     addNurse("nurse1", 1001, "password", "Lund");
-    users.put("gov1", new Government("gov1", 1002, "password"));
+    addNurse("nurse2", 1002, "password", "Malmö");
+    addNurse("nurse3", 1003, "password", "Lund");
+    users.put("gov1", new Government("gov1", 1010, "password"));
+    addPatient("pat1", 1006, "password");
 
     newListener();
   }
@@ -236,6 +241,11 @@ public class server implements Runnable {
   private void addDoctor(String userName, int ssn, String pw, String division) {
     Doctor doc = new Doctor(userName, ssn, pw, division);
     users.put(userName, doc);
+  }
+
+  private void addPatient(String userName, int ssn, String pw){
+    UserPatient pat = new UserPatient(userName, ssn, pw);
+    users.put(userName, pat);
   }
 
   private void addNurse(String userName, int ssn, String pw, String division) {
