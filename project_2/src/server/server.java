@@ -34,11 +34,12 @@ public class server implements Runnable {
   private static int numConnectedClients;
   private Map<Integer, Patient> patients; // <SSN, Patient>
   private Map<String, User> users; // <uName, User>
-  // private AuditLog auditLog;
+  private AuditLog auditLog;
 
   public server(ServerSocket ss) throws IOException {
     serverSocket = ss;
     numConnectedClients = 0;
+    auditLog = new AuditLog("auditlog.txt");
     patients = new HashMap<>();
     users = new HashMap<>();
     addDoctor("doc1", 1000, "password", "Lund");
@@ -93,7 +94,7 @@ public class server implements Runnable {
           String pw = loginReq.password;
 
           // System.out.println("uname: " + uName + "pw: " + pw);
-          new AuditLog(uName, "LoginRequest", "");
+          auditLog.addToAuditLog(uName, "LoginRequest", "");
           if (users.containsKey(uName)) {
 
             user = users.get(uName);

@@ -9,31 +9,35 @@ import java.io.IOException; // Import the IOException class to handle errors
 import server.patient.LogEntry;
 
 public class AuditLog { // The list keeping track of all entries and edits
-    private String logEntry;
+    // private String logEntry;
     private LocalDateTime dateTime;
     private DateTimeFormatter formatter;
+    private FileWriter auditLogEntry;
 
     // action behöver skrivas som t.ex "attempted to write to" "wrote to" "attempted
     // to read" "read"
-    public AuditLog(String user, String action, String patient) {
+    public AuditLog(String logPath) throws IOException {
         dateTime = LocalDateTime.now();
         formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        logEntry = dateTime.format(formatter) + " " + user + " " + action + " the journal of " + patient + "\n";
-        addToAuditLog(logEntry);
+        auditLogEntry = new FileWriter(logPath, true);
+        // logEntry = dateTime.format(formatter) + " " + user + " " + action + " the
+        // journal of " + patient + "\n";
+        // addToAuditLog(logEntry);
     }
 
-    private static void addToAuditLog(String sb) {
-        try {
-            FileWriter auditLogEntry = new FileWriter("auditlog.txt", true); // creates filewriter which can append to
-                                                                             // our auditlog
-            auditLogEntry.append(sb);
+    public void addToAuditLog(String user, String action, String patient) {
 
+        // creates filewriter which can append to
+        String logEntry = dateTime.format(formatter) + " " + user + " " + action + " the journal of " + patient + "\n"; // our
+        // auditlog
+        try {
+            auditLogEntry.append(logEntry);
             auditLogEntry.close();
-            System.out.println("Audit log entry created." + sb);
         } catch (IOException e) {
-            System.out.println("An error occurred with audit log entry.");
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
     }
 }
 // public class AuditLog { // The list keeping track of all entries and edits
