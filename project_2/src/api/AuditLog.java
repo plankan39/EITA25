@@ -8,16 +8,14 @@ import java.io.IOException;  // Import the IOException class to handle errors
 import server.patient.LogEntry;
 
 public class AuditLog { // The list keeping track of all entries and edits
-    // String log; // log to keep track of all the log entries
-    //private DateTimeFormatter dtf;
-
     private StringBuilder logEntry;
     private LocalDateTime dateTime;
+    private DateTimeFormatter formatter;
 
     //action behöver skrivas som t.ex "attempted to write to" "wrote to" "attempted to read" "read"
     public AuditLog(String user, String action, String patient) {
         dateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         logEntry = new StringBuilder(dateTime.format(formatter)+" "+user+" "+action+" the journal of "+patient+"/n");
         addToAuditLog(logEntry);
     }
