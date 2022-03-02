@@ -94,7 +94,6 @@ public class server implements Runnable {
           String pw = loginReq.password;
 
           // System.out.println("uname: " + uName + "pw: " + pw);
-          auditLog.addLoginToAuditLog(uName, "LoginRequest", request.granted);
           if (users.containsKey(uName)) {
 
             user = users.get(uName);
@@ -104,6 +103,7 @@ public class server implements Runnable {
           }
 
           loginResp = new Response(granted);
+          auditLog.addLoginToAuditLog(uName, "LoginRequest", loginResp.granted);
           out.writeObject(loginResp);
           System.out.println(granted);
         } while (!granted);
@@ -118,9 +118,9 @@ public class server implements Runnable {
           }
           req = in.readObject();
           Response response = new Response(false);
+
           if (req instanceof CreateLogRequest) {
             CreateLogRequest cReq = (CreateLogRequest) req;
-
             if (!(user instanceof Doctor) || !users.containsKey(cReq.nurse)) {
               response = new Response(false);
             } else {
@@ -137,14 +137,14 @@ public class server implements Runnable {
 
             }
             out.writeObject(response);
-            auditLog.addActionToAuditLog(uName, "LoginRequest", cReq.patientSSN, response.granted);
+            auditLog.addActionToAuditLog(user.getUserName(), "Create Log", cReq.patientSSN, response.granted);
+
           } else if (req instanceof ReadLogRequest) {
             ReadLogRequest rReq = (ReadLogRequest) req;
             boolean canReadAll = user.getSSN() == rReq.pSSN || user instanceof Government;
             if (!patients.containsKey(rReq.pSSN)) {
               response = new Response(false);
             } else if (rReq.logID != -1) {
-
               LogEntry l = patients.get(rReq.pSSN).getJournal().get(rReq.logID);
               if (l != null && (canReadAll ||
                   (user instanceof Doctor && ((Doctor) user).getDivision().equals(l.getDivision())) ||
@@ -166,6 +166,7 @@ public class server implements Runnable {
               }
 
             }
+            auditLog.addActionToAuditLog(user.getUserName(), "Read Log", rReq.pSSN, response.granted);
             out.writeObject(response);
 
           } else if (req instanceof WriteLogRequest) {
@@ -181,6 +182,7 @@ public class server implements Runnable {
               le.append(wReq.input);
               response = new Response(true);
             }
+            auditLog.addActionToAuditLog(user.getUserName(), "Write to log", wReq.patientSSN, response.granted);
             out.writeObject(response);
 
           } else if (req instanceof DeleteRequest) {
@@ -192,7 +194,9 @@ public class server implements Runnable {
             } else {
               response = new Response(false);
             }
+            auditLog.addActionToAuditLog(user.getUserName(), "Delete log", dReq.patientSSN, response.granted);
             out.writeObject(response);
+
           } else {
             out.writeObject(new Response(false));
           }
