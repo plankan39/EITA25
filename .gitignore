@@ -3,3 +3,4 @@ project_2/server.class
 project_2/bin/*.class
 project_2/bin/**/*.class
 project_2/src/auditlog.txt
+project_2/bin/auditlog.txt

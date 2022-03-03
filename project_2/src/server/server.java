@@ -116,7 +116,7 @@ public class server implements Runnable {
         Object req;
 
         while (true) {
-          System.out.println("Waiting for request");
+          // System.out.println("Waiting for request");
           if (user.getSSN() == -1) {
             System.out.println("wrong ssn");
             break;
@@ -167,7 +167,8 @@ public class server implements Runnable {
                     log = log + "\n" + l.toString();
                   }
                 }
-                response = new Response(true, log);
+                if (!log.equals(""))
+                  response = new Response(true, log);
               }
 
             }
