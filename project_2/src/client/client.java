@@ -48,17 +48,23 @@ public class client {
 
     try {
       SSLSocketFactory factory = null;
+      Console read = System.console();
       try {
-        char[] password = "password".toCharArray();
+
+        String keystoreUser = read.readLine("Enter keystore: ");
+        if (keystoreUser.equalsIgnoreCase("quit")) {
+          return;
+        }
+        char[] password = read.readPassword("Keystore password: ");
         KeyStore ks = KeyStore.getInstance("JKS");
         KeyStore ts = KeyStore.getInstance("JKS");
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         SSLContext ctx = SSLContext.getInstance("TLSv1.2");
         // keystore password (storepass);
-        ks.load(new FileInputStream("../certificates/users/doc1keystore"), password);
+        ks.load(new FileInputStream("../certificates/users/" + keystoreUser), password);
         // truststore password (storepass);
-        ts.load(new FileInputStream("../certificates/users/doc1keystore"), password);
+        ts.load(new FileInputStream("../certificates/users/" + keystoreUser), password);
         kmf.init(ks, password); // user password (keypass)
         tmf.init(ts); // keystore can be used as truststore here
         ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
@@ -87,21 +93,29 @@ public class client {
       System.out.println("secure connection established\n\n");
 
       // BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
-      Console read = System.console();
+
       ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
       ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
       String userName;
+      String pw;
+
+      Request login;
       Response response;
       do {
         System.out.println("Login");
-        userName = read.readLine("Username: ");
-        String pw = new String(read.readPassword("Password: "));
-        Request login = new LoginRequest(userName, pw);
 
-        System.out.println(((LoginRequest) login).userName + " " + ((LoginRequest) login).password);
+        userName = read.readLine("Username: ");
+        if (userName.equalsIgnoreCase("quit")) {
+          break;
+        }
+
+        pw = new String(read.readPassword("Password: "));
+        login = new LoginRequest(userName, pw);
 
         out.writeObject(login);
         out.flush();
+
         response = (Response) in.readObject();
 
         if (!response.granted) {
@@ -164,7 +178,7 @@ public class client {
               out.writeObject(new WriteLogRequest(pSSN, input, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              if (r2.granted){
+              if (r2.granted) {
                 System.out.println("Access granted, file has been updated");
               } else {
                 System.out.println("Access denied");
@@ -182,7 +196,7 @@ public class client {
               out.writeObject(new ReadLogRequest(pSSN, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              if (r2.granted){
+              if (r2.granted) {
                 System.out.println("Access granted" + "\n" + r2.log);
               } else {
                 System.out.println("Access denied");
@@ -201,7 +215,7 @@ public class client {
               out.writeObject(new DeleteRequest(pSSN, lnbr));
               out.flush();
               Response r2 = (Response) in.readObject();
-              if (r2.granted){
+              if (r2.granted) {
                 System.out.println("Access granted, file deleted");
               } else {
                 System.out.println("Access denied");
@@ -228,9 +242,6 @@ public class client {
   }
 
   private static boolean validInputAction(String s) {
-    if (s.length() != 1 || !Character.isDigit(s.charAt(0))) {
-      return false; // Check if the string is empty
-    }
-    return true;
+    return s.length() != 1 || !Character.isDigit(s.charAt(0)) ? false : true;
   }
 }

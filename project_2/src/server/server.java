@@ -42,12 +42,12 @@ public class server implements Runnable {
     auditLog = new AuditLog("auditlog.txt");
     patients = new HashMap<>();
     users = new HashMap<>();
-    addDoctor("doc1", 1000, "password", "Lund");
-    addDoctor("doc2", 1004, "password", "Malmö");
-    addDoctor("doc3", 1005, "password3", "Lund");
-    addNurse("nurse1", 1001, "password", "Lund");
-    addNurse("nurse2", 1002, "password", "Malmö");
-    addNurse("nurse3", 1003, "password", "Lund");
+    addDoctor("doc1", 1000, "password", "Region Skåne");
+    addDoctor("doc2", 1004, "password", "Västra Götaland");
+    addDoctor("doc3", 1005, "password", "Region Skåne");
+    addNurse("nurse1", 1001, "password", "Region Skåne");
+    addNurse("nurse2", 1002, "password", "Västra Götalandsregionen");
+    addNurse("nurse3", 1003, "password", "Region Skåne");
     users.put("gov1", new Government("gov1", 1010, "password"));
     addPatient("pat1", 1006, "password");
 
@@ -243,7 +243,7 @@ public class server implements Runnable {
     users.put(userName, doc);
   }
 
-  private void addPatient(String userName, int ssn, String pw){
+  private void addPatient(String userName, int ssn, String pw) {
     UserPatient pat = new UserPatient(userName, ssn, pw);
     users.put(userName, pat);
   }
