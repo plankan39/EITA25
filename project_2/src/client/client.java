@@ -125,8 +125,11 @@ public class client {
         }
       } while (!response.granted);
       String options = "What do you want to do?" + "\n" +
-          "Press 1 to create a file, 2 to write to a file, " +
-          "3 to read a file, 4 to delete a file and 'quit' to quit"
+          "Press 1 to create a file" + "\n" + 
+          "2 to write to a file " + "\n" +
+          "3 to read a file" + "\n"  +
+          "4 to delete a file" + "\n" + 
+          "'quit' to quit"
           + "\n" + ">";
       String msg;
       do {
