@@ -108,7 +108,7 @@ public class server implements Runnable {
           }
 
           loginResp = new Response(granted);
-          auditLog.addLoginToAuditLog(uName, "login request", loginResp.granted);
+          auditLog.addLoginToAuditLog(uName, "LOGIN", loginResp.granted);
           out.writeObject(loginResp);
           System.out.println(granted);
         } while (!granted);
@@ -142,7 +142,7 @@ public class server implements Runnable {
 
             }
             out.writeObject(response);
-            auditLog.addActionToAuditLog(user.getUserName(), "create log", cReq.patientSSN, response.granted);
+            auditLog.addActionToAuditLog(user.getUserName(), "CREATE LOG", cReq.patientSSN, response.granted);
 
           } else if (req instanceof ReadLogRequest) {
             ReadLogRequest rReq = (ReadLogRequest) req;
@@ -172,7 +172,7 @@ public class server implements Runnable {
               }
 
             }
-            auditLog.addActionToAuditLog(user.getUserName(), "read log", rReq.pSSN, response.granted);
+            auditLog.addActionToAuditLog(user.getUserName(), "READ LOG", rReq.pSSN, response.granted);
             out.writeObject(response);
 
           } else if (req instanceof WriteLogRequest) {
@@ -188,7 +188,7 @@ public class server implements Runnable {
               le.append(wReq.input);
               response = new Response(true);
             }
-            auditLog.addActionToAuditLog(user.getUserName(), "write to log", wReq.patientSSN, response.granted);
+            auditLog.addActionToAuditLog(user.getUserName(), "WRITE TO LOG", wReq.patientSSN, response.granted);
             out.writeObject(response);
 
           } else if (req instanceof DeleteRequest) {
@@ -200,7 +200,7 @@ public class server implements Runnable {
             } else {
               response = new Response(false);
             }
-            auditLog.addActionToAuditLog(user.getUserName(), "delete log", dReq.patientSSN, response.granted);
+            auditLog.addActionToAuditLog(user.getUserName(), "DELETE LOG", dReq.patientSSN, response.granted);
             out.writeObject(response);
 
           } else {

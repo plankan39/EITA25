@@ -26,7 +26,7 @@ public class AuditLog { // The list keeping track of all entries and edits
 
     public void addLoginToAuditLog(String user, String action, boolean actionGranted) throws IOException{
         // creates filewriter which can append to our auditlog
-        String logEntry = dateTime.format(formatter) + " " + user + " " + action + " " +  booleanStatus(actionGranted) + "\n";
+        String logEntry = dateTime.format(formatter) + "\n User: " + user + "\n Requested Action: " + action + ", " +  booleanStatus(actionGranted) + "\n";
         auditLogEntry = new FileWriter(logPath, true);
         try {
            // auditLogEntry.open();
@@ -40,7 +40,7 @@ public class AuditLog { // The list keeping track of all entries and edits
 
     public void addActionToAuditLog(String user, String action, int patientSSN, boolean actionGranted) throws IOException {
         // creates filewriter which can append to
-        String logEntry = dateTime.format(formatter) + " " + user + " requested action: " + action + " in journal of patientSSN: " + patientSSN + " " + booleanStatus(actionGranted) + "\n"; // our
+        String logEntry = dateTime.format(formatter) + "\n User: " + user + " \n Patient SSN: "+ patientSSN +" \n Requested action: " + action + ", " + booleanStatus(actionGranted) + "\n"; // our
         auditLogEntry = new FileWriter(logPath, true);
         try {
            // auditLogEntry.open();
